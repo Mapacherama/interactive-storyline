@@ -1,35 +1,32 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useEffect, useState } from "react";
+import { db } from "./services/firebase";
+import { collection, getDocs } from "firebase/firestore";
+import { Milestone } from "./types/milestone";
+import Timeline from "./components/Timeline";
+import AddMilestone from "./components/AddMilestone";
 
-function App() {
-  const [count, setCount] = useState(0)
+const App: React.FC = () => {
+  const [milestones, setMilestones] = useState<Milestone[]>([]);
+
+  useEffect(() => {
+    const fetchMilestones = async () => {
+      const querySnapshot = await getDocs(collection(db, "milestones"));
+      const milestonesData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Milestone[];
+      setMilestones(milestonesData);
+    };
+    fetchMilestones();
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div>
+      <h1>Interactive Storyline Composer</h1>
+      <AddMilestone />
+      <Timeline milestones={milestones} />
+    </div>
+  );
+};
 
-export default App
+export default App;
